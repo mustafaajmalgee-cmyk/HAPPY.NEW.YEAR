@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy New Year 2026!</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #0f0f23;
+        font-family: 'Arial', sans-serif;
+        color: white;
+        overflow: hidden;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    #preparing, #countdownContainer, #greeting {
+        display: none;
+    }
+
+    h1, p {
+        margin: 10px;
+    }
+
+    h1.glow {
+        font-size: 2.5em;
+        animation: glow 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from { text-shadow: 0 0 10px #fff, 0 0 20px #ff0; }
+        to { text-shadow: 0 0 20px #ff0, 0 0 30px #fff; }
+    }
+
+    .firework, .rocket {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #ff0;
+        border-radius: 50%;
+        animation: explode 2s linear infinite;
+    }
+
+    @keyframes explode {
+        0% { transform: scale(0); opacity: 1; }
+        50% { transform: scale(1.5); opacity: 0.7; }
+        100% { transform: scale(2); opacity: 0; }
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 1.2em;
+        margin-top: 20px;
+        cursor: pointer;
+        border: none;
+        border-radius: 8px;
+        background: #ffdd00;
+        color: #0f0f23;
+        transition: transform 0.2s;
+    }
+    button:hover { transform: scale(1.1); }
+</style>
+</head>
+<body>
+
+<audio id="bgMusic" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6ef3a9a524.mp3?filename=happy-new-year-105117.mp3" autoplay loop></audio>
+
+<div id="preparing">
+    <h1 class="glow">🎉 Preparing something special... 🎉</h1>
+</div>
+
+<div id="countdownContainer">
+    <h1 class="glow">Countdown to 2026</h1>
+    <div id="countdown"></div>
+</div>
+
+<div id="greeting">
+    <h1 id="nameButton">heyy meriii jannn ❤️</h1>
+</div>
+
+<script>
+// ------------------ Preparing screen ------------------
+const preparing = document.getElementById('preparing');
+const countdownContainer = document.getElementById('countdownContainer');
+const greeting = document.getElementById('greeting');
+preparing.style.display = 'block';
+
+setTimeout(() => {
+    preparing.style.display = 'none';
+    countdownContainer.style.display = 'block';
+    startCountdown(); // ⭐ start 10 second countdown
+}, 10000); // preparing = 10 sec
+
+// ------------------ 10 SECOND COUNTDOWN (ONLY CHANGE) ------------------
+const countdownEl = document.getElementById('countdown');
+let timeLeft = 10;
+
+function startCountdown() {
+    countdownEl.innerHTML = timeLeft + 's';
+
+    const timer = setInterval(() => {
+        timeLeft--;
+        countdownEl.innerHTML = timeLeft + 's';
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            countdownContainer.style.display = 'none';
+            greeting.style.display = 'block';
+        }
+    }, 1000);
+}
+
+// ------------------ Interactive clicks ------------------
+let clickCount = 0;
+const nameButton = document.getElementById('nameButton');
+
+nameButton.addEventListener('click', () => {
+    clickCount++;
+    if (clickCount === 1) {
+        nameButton.textContent = 'Oops 😺';
+    } else if (clickCount === 2) {
+        nameButton.textContent = 'One more time! 😸';
+    } else if (clickCount === 3) {
+        showFinalPopup();
+    }
+});
+
+// ------------------ Final popup with fireworks ------------------
+function showFinalPopup() {
+    greeting.innerHTML = '<h1 class="glow">🎆 HAPPY NEW YEAR<br>To the best person I met in my life, Mirab 🎆</h1>';
+
+    function createFirework() {
+        const fw = document.createElement('div');
+        fw.className = 'firework';
+        fw.style.top = Math.random() * 90 + '%';
+        fw.style.left = Math.random() * 90 + '%';
+        document.body.appendChild(fw);
+        setTimeout(() => fw.remove(), 2000);
+    }
+
+    function createRocket() {
+        const rocket = document.createElement('div');
+        rocket.className = 'rocket';
+        rocket.style.bottom = '0%';
+        rocket.style.left = Math.random() * 90 + '%';
+        document.body.appendChild(rocket);
+
+        let pos = 0;
+        const interval = setInterval(() => {
+            pos += 2;
+            rocket.style.bottom = pos + '%';
+            if (pos >= 80) {
+                clearInterval(interval);
+                rocket.remove();
+            }
+        }, 30);
+    }
+
+    setInterval(createFirework, 300);
+    setInterval(createRocket, 800);
+}
+</script>
+</body>
+</html>
