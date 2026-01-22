@@ -3,168 +3,239 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Happy New Year 2026!</title>
+<title>Happy New Year 2026</title>
+
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: #0f0f23;
-        font-family: 'Arial', sans-serif;
-        color: white;
-        overflow: hidden;
-        flex-direction: column;
-        text-align: center;
-    }
+body {
+    margin: 0;
+    height: 100vh;
+    background: #0f0f23;
+    font-family: Arial, sans-serif;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    text-align: center;
+}
 
-    #preparing, #countdownContainer, #greeting {
-        display: none;
-    }
+/* ---------- PASSWORD SCREEN ---------- */
+#passwordScreen {
+    position: fixed;
+    inset: 0;
+    background: #0f0f23;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
 
-    h1, p {
-        margin: 10px;
-    }
+.passBox {
+    position: relative;
+}
 
-    h1.glow {
-        font-size: 2.5em;
-        animation: glow 1.5s ease-in-out infinite alternate;
-    }
+#passwordInput {
+    padding: 10px 40px 10px 10px;
+    font-size: 1.1em;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+}
 
-    @keyframes glow {
-        from { text-shadow: 0 0 10px #fff, 0 0 20px #ff0; }
-        to { text-shadow: 0 0 20px #ff0, 0 0 30px #fff; }
-    }
+#toggleEye {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+}
 
-    .firework, .rocket {
-        position: absolute;
-        width: 6px;
-        height: 6px;
-        background: #ff0;
-        border-radius: 50%;
-        animation: explode 2s linear infinite;
-    }
+button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 1.1em;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #ffdd00;
+}
 
-    @keyframes explode {
-        0% { transform: scale(0); opacity: 1; }
-        50% { transform: scale(1.5); opacity: 0.7; }
-        100% { transform: scale(2); opacity: 0; }
-    }
+#errorMsg {
+    margin-top: 10px;
+}
 
-    button {
-        padding: 10px 20px;
-        font-size: 1.2em;
-        margin-top: 20px;
-        cursor: pointer;
-        border: none;
-        border-radius: 8px;
-        background: #ffdd00;
-        color: #0f0f23;
-        transition: transform 0.2s;
-    }
-    button:hover { transform: scale(1.1); }
+#timerMsg {
+    font-size: 0.9em;
+    color: #ffdd00;
+}
+
+/* ---------- MAIN CONTENT ---------- */
+#preparing, #countdownContainer, #greeting {
+    display: none;
+}
+
+.glow {
+    animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 10px #fff; }
+    to { text-shadow: 0 0 25px #ffdd00; }
+}
+
+.firework {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: yellow;
+    border-radius: 50%;
+    animation: explode 2s linear infinite;
+}
+
+@keyframes explode {
+    0% { transform: scale(0); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
+}
 </style>
 </head>
+
 <body>
 
-<audio id="bgMusic" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6ef3a9a524.mp3?filename=happy-new-year-105117.mp3" autoplay loop></audio>
+<!-- PASSWORD -->
+<div id="passwordScreen">
+    <h1>🔒 Enter Password</h1>
 
+    <div class="passBox">
+        <input type="password" id="passwordInput" placeholder="Password">
+        <span id="toggleEye" onclick="togglePassword()">👁️</span>
+    </div>
+
+    <button onclick="checkPassword()">Unlock</button>
+    <p id="errorMsg"></p>
+    <p id="timerMsg"></p>
+</div>
+
+<audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_2b7b7a3c61.mp3"></audio>
+
+<!-- MAIN -->
 <div id="preparing">
-    <h1 class="glow">🎉 Preparing something special... 🎉</h1>
+    <h1 class="glow">🎉 Preparing something special…</h1>
 </div>
 
 <div id="countdownContainer">
-    <h1 class="glow">Countdown to 2026</h1>
-    <div id="countdown"></div>
+    <h1 class="glow">Countdown</h1>
+    <h2 id="countdown"></h2>
 </div>
 
-<div id="greeting">
-    <h1 id="nameButton">heyy meriii jannn ❤️</h1>
-</div>
+<div id="greeting"></div>
 
 <script>
-// ------------------ Preparing screen ------------------
-const preparing = document.getElementById('preparing');
-const countdownContainer = document.getElementById('countdownContainer');
-const greeting = document.getElementById('greeting');
-preparing.style.display = 'block';
+/* ---------- PASSWORD LOGIC ---------- */
+const CORRECT_PASSWORD = "mirab2026";
+let attempts = 0;
+let locked = false;
 
-setTimeout(() => {
-    preparing.style.display = 'none';
-    countdownContainer.style.display = 'block';
-    startCountdown(); // ⭐ start 10 second countdown
-}, 10000); // preparing = 10 sec
+function togglePassword() {
+    const input = document.getElementById("passwordInput");
+    input.type = input.type === "password" ? "text" : "password";
+}
 
-// ------------------ 10 SECOND COUNTDOWN (ONLY CHANGE) ------------------
-const countdownEl = document.getElementById('countdown');
-let timeLeft = 10;
+function checkPassword() {
+    if (locked) return;
 
-function startCountdown() {
-    countdownEl.innerHTML = timeLeft + 's';
+    const input = document.getElementById("passwordInput").value;
+    const error = document.getElementById("errorMsg");
+    const sound = document.getElementById("wrongSound");
 
-    const timer = setInterval(() => {
-        timeLeft--;
-        countdownEl.innerHTML = timeLeft + 's';
+    if (input === CORRECT_PASSWORD) {
+        document.getElementById("passwordScreen").style.display = "none";
+        startApp();
+        return;
+    }
 
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            countdownContainer.style.display = 'none';
-            greeting.style.display = 'block';
+    attempts++;
+    sound.play();
+
+    const msgs = [
+        "😅 Oops! Not correct",
+        "🙂 Try once more",
+        "🔒 Locked for 30 seconds 🌙"
+    ];
+
+    error.textContent = msgs[attempts - 1];
+
+    if (attempts >= 3) lockSystem();
+}
+
+function lockSystem() {
+    locked = true;
+    let time = 30;
+    const timer = document.getElementById("timerMsg");
+
+    const interval = setInterval(() => {
+        timer.textContent = `⏳ Try again in ${time}s`;
+        time--;
+
+        if (time < 0) {
+            clearInterval(interval);
+            attempts = 0;
+            locked = false;
+            timer.textContent = "✨ You may try again";
+            document.getElementById("errorMsg").textContent = "";
         }
     }, 1000);
 }
 
-// ------------------ Interactive clicks ------------------
-let clickCount = 0;
-const nameButton = document.getElementById('nameButton');
+/* ---------- MAIN ANIMATION ---------- */
+const preparing = document.getElementById("preparing");
+const countdownBox = document.getElementById("countdownContainer");
+const greeting = document.getElementById("greeting");
+const countdownEl = document.getElementById("countdown");
 
-nameButton.addEventListener('click', () => {
-    clickCount++;
-    if (clickCount === 1) {
-        nameButton.textContent = 'Oops 😺';
-    } else if (clickCount === 2) {
-        nameButton.textContent = 'One more time! 😸';
-    } else if (clickCount === 3) {
-        showFinalPopup();
-    }
-});
+function startApp() {
+    preparing.style.display = "block";
 
-// ------------------ Final popup with fireworks ------------------
-function showFinalPopup() {
-    greeting.innerHTML = '<h1 class="glow">🎆 HAPPY NEW YEAR<br>To the best person I met in my life, Mirab 🎆</h1>';
+    setTimeout(() => {
+        preparing.style.display = "none";
+        countdownBox.style.display = "block";
+        startCountdown();
+    }, 5000);
+}
 
-    function createFirework() {
-        const fw = document.createElement('div');
-        fw.className = 'firework';
-        fw.style.top = Math.random() * 90 + '%';
-        fw.style.left = Math.random() * 90 + '%';
+let timeLeft = 10;
+function startCountdown() {
+    countdownEl.textContent = timeLeft + "s";
+    const timer = setInterval(() => {
+        timeLeft--;
+        countdownEl.textContent = timeLeft + "s";
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            countdownBox.style.display = "none";
+            showGreeting();
+        }
+    }, 1000);
+}
+
+function showGreeting() {
+    greeting.style.display = "block";
+    greeting.innerHTML = `
+        <h1 class="glow">
+        🌙 Happy New Year 2026 🌙<br>
+        “To the best person I’ve ever known”<br>
+               "YOU ARE BEST SERIOUSLY"
+        </h1>
+    `;
+
+    setInterval(() => {
+        const fw = document.createElement("div");
+        fw.className = "firework";
+        fw.style.top = Math.random()*100+"%";
+        fw.style.left = Math.random()*100+"%";
         document.body.appendChild(fw);
-        setTimeout(() => fw.remove(), 2000);
-    }
-
-    function createRocket() {
-        const rocket = document.createElement('div');
-        rocket.className = 'rocket';
-        rocket.style.bottom = '0%';
-        rocket.style.left = Math.random() * 90 + '%';
-        document.body.appendChild(rocket);
-
-        let pos = 0;
-        const interval = setInterval(() => {
-            pos += 2;
-            rocket.style.bottom = pos + '%';
-            if (pos >= 80) {
-                clearInterval(interval);
-                rocket.remove();
-            }
-        }, 30);
-    }
-
-    setInterval(createFirework, 300);
-    setInterval(createRocket, 800);
+        setTimeout(()=>fw.remove(),2000);
+    },300);
 }
 </script>
+
 </body>
 </html>
